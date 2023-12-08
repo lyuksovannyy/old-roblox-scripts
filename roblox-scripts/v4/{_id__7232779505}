@@ -1,0 +1,58 @@
+-- Type Race!
+local con = false
+local menu = ngamestalker:Menu(game.PlaceId,true,function() 
+    con = false
+end)
+
+local tab = menu:Tab()
+
+local Emulator = game:GetService("VirtualInputManager")
+local Letter = game:GetService("Workspace"):FindFirstChildOfClass("SelectionBox")
+
+local humanizer = {
+    state = true;
+    mistake_chance = 5; -- 0 disable
+    max_mistakes = 2; -- 0 unlimited
+    
+};
+local WPM = 69
+
+WMPStat = game:GetService("Players").LocalPlayer.PlayerGui.ScreenGui.Main.RaceScreen.LiveStats.WPM.Stat
+local atT
+atT = tab:Toggle({name="Auto type"},function(state)
+    if state and con == false then
+        con = true
+        spawn(function()
+            local have_mistakes = 0
+            while con do
+                local r = pcall(function()
+                    
+                    local Letter = Letter.Adornee:GetChildren()[1].TextLabel.Text:upper()
+                    if Letter == " " then Letter = "Space" end
+                    
+                    if humanizer.state then
+                        local chance = math.random(1,100)
+                        if (humanizer.mistake_chance >= chance) and (humanizer.max_mistakes ~= have_mistakes or humanizer.max_mistakes == 0) then 
+                            Letter = "Minus"
+                            have_mistakes = have_mistakes + 1 
+                        end
+                    end
+                    
+                    Emulator:SendKeyEvent(true,Enum.KeyCode[Letter],false,Gui)
+                    if humanizer.state then wait(math.random(0.15,0.65)) end
+                    Emulator:SendKeyEvent(false,Enum.KeyCode[Letter],false,Gui)
+                    
+                end)
+                if not r then break end
+                repeat wait() until tonumber(WMPStat.Text) < WPM
+            end
+            con = false
+            atT:Edit({state=false})
+        end)
+    else con = false end
+end)
+
+tab:Slider({name="WPM",val={0,WPM,300}},function(_) WPM = _ end)
+tab:Toggle({name="Humanizer",desc="Emulates somehow human",state=humanizer.state},function(toggle) humanizer.state = toggle end)
+tab:Slider({name="Miss chance",val={0,humanizer.mistake_chance,100}},function(int) humanizer.mistake_chance = int end)
+tab:Slider({name="Max misses",val={0,humanizer.max_mistakes,99}},function(int) humanizer.max_mistakes = int end)

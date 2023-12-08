@@ -1,0 +1,83 @@
+-- raise a floppa 2 
+local plr = game:GetService("Players").LocalPlayer
+
+local function click(part)
+    if part.ClassName == "ProximityPrompt" then
+        fireproximityprompt(part,5)
+    else fireclickdetector(part,5) end
+end
+local function touch(part)
+    if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+        firetouchinterest(plr.Character:FindFirstChild("HumanoidRootPart"), part, 1)
+        wait()
+        firetouchinterest(plr.Character:FindFirstChild("HumanoidRootPart"), part, 0)
+    end
+end
+
+local funcs = {}
+local gui = ngamestalker:Menu(game.PlaceId,true,function()
+    for i,v in pairs(funcs) do
+        pcall(function() funcs[i]:Disconnect() end)
+        funcs[i] = false
+    end
+end)
+gui = gui:Tab()
+
+gui:Toggle({name="Clicker"},function(s)
+    funcs["Clicker"] = s
+    
+    if s then
+        spawn(function()
+            funcs["Collector"] = workspace.ChildAdded:Connect(function(v)
+                if v.Name:lower():find("money") then
+                    touch(v)
+                end
+                
+            end)
+            while funcs["Clicker"] and wait() do
+                local part = workspace.Floppa.ClickDetector
+                click(part)
+                for i,v in pairs(workspace.Unlocks:GetChildren()) do
+                    if v:FindFirstChildOfClass("Configuration") and v:FindFirstChildOfClass("Configuration"):FindFirstChild("Hunger") and v:FindFirstChildOfClass("ClickDetector") then
+                        local part = v.ClickDetector
+                        click(part)
+                    end    
+                end
+            end
+        end)
+    else
+        pcall(function() funcs["Collector"]:Disconnect() end)
+        funcs["Collector"] = false
+    end
+end)
+gui:Button({name="Feed floppa"},function()
+    game:GetService("ReplicatedStorage").Events.Unlock:FireServer("Floppa Food","the_interwebs")
+    local old = plr.Character:FindFirstChild("HumanoidRootPart").CFrame
+    wait()
+    plr.Character:FindFirstChild("HumanoidRootPart").CFrame = CFrame.new(game:GetService("Workspace")["Key Parts"].Bowl.Part.Position)
+    wait(0.2)
+    click(game:GetService("Workspace")["Key Parts"].Bowl.Part.ProximityPrompt)
+    wait(0.1)
+    plr.Character:FindFirstChild("HumanoidRootPart").CFrame = old
+
+end)
+gui:Button({name="Collect seeds"},function()
+    for i,v in pairs(workspace.Seeds:GetChildren()) do
+        if v:FindFirstChildOfClass("ProximityPrompt") then
+            plr.Character:FindFirstChild("HumanoidRootPart").CFrame = CFrame.new(v.Position)
+            wait(0.15)
+            click(v:FindFirstChildOfClass("ProximityPrompt"))
+            wait(0.15)
+        end
+    end
+end)
+gui:Button({name="Enter the backrooms + remove walls"},function()
+    for i,room in pairs(workspace.Backrooms.Rooms:GetChildren()) do
+        for i,v in pairs(room.Parts:GetChildren()) do
+            if v.ClassName == "Part" and v:FindFirstChildOfClass("Texture") and v:FindFirstChildOfClass("Texture").Texture:find("3255302920") then
+                v:Destroy()
+            end
+        end
+    end
+    plr.Character:FindFirstChild("HumanoidRootPart").CFrame = CFrame.new(workspace.Backrooms.Zone.Position)
+end)

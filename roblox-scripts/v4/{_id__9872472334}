@@ -1,0 +1,98 @@
+-- Evade
+--[[ Source:
+https://raw.githubusercontent.com/Babyhamsta/RBLX_Scripts/main/Evade/main.lua
+]]
+
+local highlightAPI = loadstring(game:HttpGet("https://raw.githubusercontent.com/GameSTALkER/roblox-scripts/main/scripts/Highlight.lua"))()
+local menu = ngamestalker:Menu(game.PlaceId,true,function()
+    highlightAPI:DestroyAll()
+    looped = false
+    nlooped = false
+end)
+local tab = menu:Tab()
+
+local Events = game.ReplicatedStorage:WaitForChild("Events")
+local Players = game:GetService("Players")
+local plr = Players.LocalPlayer
+
+local btn = {}
+
+tab:Button({name="Respawn (only if down)"},function()
+    local Reset = Events:FindFirstChild("Reset")
+    local Respawn = Events:FindFirstChild("Respawn")
+
+    if Reset and Respawn then
+        Reset:FireServer();
+        wait(2)
+        Respawn:FireServer();
+    end
+end)
+tab:Button({name="Get free items (check desc)",desc="You'll receive Boombox skin, Alpha skin, Dev Test emote.\nCheck you inventory after."},function()
+    Events.UI.Purchase:InvokeServer("Skins", "AlphaTester")
+    Events.UI.Purchase:InvokeServer("Skins", "Boombox")
+    Events.UI.Purchase:InvokeServer("Emotes", "Test")
+end)
+marks = {}
+local function CharAdded(w,id)
+    local found = false
+    pcall(function()
+        for i,v in pairs(w:GetChildren()) do
+            if v.Name == "StatChanges" and v.Speed:FindFirstChild("Downed") then
+                marks[id] = highlightAPI:Mark(w,w.Name,Color3.fromRGB(255,255,100))
+                found = true
+                break
+            end
+        end
+        if not found then marks[id] = highlightAPI:Mark(w,w.Name) end
+    end)
+end
+looped = false
+tab:Toggle({name="Wallhack players",exec=true,state=true},function(s)
+    looped = s
+    if s then
+        spawn(function()
+            while looped do
+                for i,v in pairs(Players:GetPlayers()) do
+                    CharAdded(v.Character,v.Name)
+                end
+                wait(1)
+            end
+        end)
+    else
+        for i,v in pairs(marks) do
+            pcall(function() marks[i]:Destroy() end)
+            marks[i] = nil
+        end
+    end
+end)
+
+nlooped = false
+tab:Toggle({name="Wallhack Nextbots(chasing images)",exec=true,state=true},function(s)
+    nlooped = s
+    if s then
+        spawn(function()
+            while nlooped do
+                for i,v in pairs(workspace.Game.Players:GetChildren()) do
+                    if v:FindFirstChild("HRP") and v:FindFirstChild("HumanoidRootPart") then
+                        v.HumanoidRootPart.Transparency = 0.99
+                        highlightAPI:Mark(v.HumanoidRootPart,nil,Color3.fromRGB(255,100,100))
+                    end
+                end
+                wait(1)
+            end
+        end)
+    end
+end)
+
+tab:Toggle({name="Show/hide barriers + disable/enable",key="x"},function(s)
+    if s then
+        s = 0
+    else s = 1 end
+    
+    for i,v in pairs(game:GetService("Workspace").Game.Map.InvisParts:GetChildren()) do
+        v.Transparency = s
+        v.CanCollide = s == 1
+    end
+end)
+
+tab:Button({name="Load another script (creds in desc)",desc="v3rm: https://v3rmillion.net/showthread.php?tid=1185864"},loadstring(game:HttpGet('https://raw.githubusercontent.com/zReal-King/Evade/main/Main.lua')))

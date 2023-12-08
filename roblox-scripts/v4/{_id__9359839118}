@@ -1,0 +1,854 @@
+-- GAS STATION
+
+local plr = game:GetService("Players").LocalPlayer
+local RS = game:GetService("ReplicatedStorage")
+local TW = game:GetService("TweenService")
+
+local CD = {
+    A = false;
+    CW = false;
+    CS = false;
+    CP = false;
+    ET = false;
+    SI = false;
+    FC = false;
+    WC = false;
+    
+}
+local b = {}
+local cons = {}
+local function XSizeByText(parent,X,XX)
+    X = X or 1
+    XX = XX or 0
+    local A = parent.Size
+    parent.Size = UDim2.new(0, math.huge, X, XX)
+    local B = parent.TextBounds
+    parent.Size = A
+    TW:Create(parent,TweenInfo.new(0.25,Enum.EasingStyle.Quad),{Size = UDim2.new(0, B.X+6, X, XX)}):Play()
+end
+local makeESP = function(obj,name,q)
+    --pcall(function()
+        if not obj or not name then return end
+        q = q or 2
+    
+        local BillboardGui = obj:FindFirstChild("ESP") or Instance.new("BillboardGui",obj)
+        local Exist = (BillboardGui.Name == "ESP")
+        local Frame = BillboardGui:FindFirstChildOfClass("TextLabel") or Instance.new("TextLabel",BillboardGui)
+        local UICorner = Frame:FindFirstChildOfClass("UICorner") or Instance.new("UICorner",Frame)
+        
+        if name == "" then
+            spawn(function()
+                TW:Create(Frame, TweenInfo.new(0.45,Enum.EasingStyle.Cubic), {Position = UDim2.new(0.5, 0, 1, BillboardGui.AbsoluteSize.Y+5)}):Play()
+                local a = TW:Create(Frame, TweenInfo.new(0.5,Enum.EasingStyle.Sine), {
+                    BackgroundTransparency = 1;
+                    BackgroundColor3 = Color3.fromRGB(255,255,255);
+                    TextTransparency = 1;
+                    TextColor3 = Color3.fromRGB(255,255,255);
+                })
+                a:Play()
+                TW:Create(UICorner, TweenInfo.new(0.45,Enum.EasingStyle.Cubic), {CornerRadius = UDim.new(0, 20)}):Play()
+                a.Completed:Wait()
+                BillboardGui:Destroy()
+            end)
+            return
+        end
+        
+        BillboardGui.Name = "ESP"
+        BillboardGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        BillboardGui.AlwaysOnTop = true
+        BillboardGui.ExtentsOffsetWorldSpace = Vector3.new(0, q, 0)
+        BillboardGui.LightInfluence = 1
+        BillboardGui.ClipsDescendants = false
+        BillboardGui.Size = UDim2.new(0, 200, 0, 20)
+    
+        Frame.Name = " "
+        Frame.AnchorPoint = Vector2.new(0.5, 1)
+        Frame.Font = Enum.Font.GothamBold
+        Frame.ClipsDescendants = true
+        Frame.TextSize = 14
+        Frame.RichText = true
+        if not Exist then
+            Frame.Size = UDim2.new(0, 0, 1, 0)
+            Frame.Position = UDim2.new(0.5, 0, 1, BillboardGui.AbsoluteSize.Y+5)
+            Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+            Frame.BackgroundTransparency = 1
+            Frame.TextColor3 = Color3.fromRGB(0, 0, 0)
+            Frame.TextTransparency = 1
+            TW:Create(Frame, TweenInfo.new(0.45,Enum.EasingStyle.Cubic), {Position = UDim2.new(0.5, 0, 1, 0)}):Play()
+            TW:Create(Frame, TweenInfo.new(0.5,Enum.EasingStyle.Sine), {
+                BackgroundTransparency = 0.3;
+                BackgroundColor3 = Color3.fromRGB(255,255,255);
+                TextTransparency = 0;
+                TextColor3 = Color3.fromRGB(0,0,0);
+            }):Play()
+        end
+        Frame.Text = tostring(name);XSizeByText(Frame)
+    
+        UICorner.Name = " "
+        TW:Create(UICorner, TweenInfo.new(0.45,Enum.EasingStyle.Cubic), {CornerRadius = UDim.new(0, 4)}):Play()
+    
+        return BillboardGui,Frame
+    --end)
+end
+local FakeWalk = function(part,pos)
+    pcall(function()
+        if plr.Character then
+            pos = pos or Vector3.new(0,0,0)
+            local hum = plr.Character:WaitForChild("Humanoid")
+            local walkspeed = hum.WalkSpeed
+            local distance = (part.Position - plr.Character:WaitForChild("HumanoidRootPart").Position).Magnitude
+            local travel_time = distance / walkspeed
+            if distance >= 8 then hum:MoveTo(part.Position) end
+            wait(travel_time)
+            if pos == "false" then plr.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(part.Position + pos) end
+            wait()
+        end
+    end)
+end
+local awaitAnimEnd = function()
+    if plr.Character then
+        wait(0.2)
+        local hum = plr.Character:WaitForChild("Humanoid")
+        local animTracks = hum:GetPlayingAnimationTracks()
+        for i,v in pairs(animTracks) do
+            if v.Name == "Animation" then
+                wait((v.Length / v.Speed))
+                break
+            end
+        end
+    end
+end
+local fire = function(...) 
+    if plr.Character then
+        RS.Remote:FireServer(...)
+        wait(0.3)
+        awaitAnimEnd()
+    end
+end
+local firePrompt = function(promt,b)
+    if plr.Character then
+        b = b or 8
+        fireproximityprompt(promt,b)
+        wait(0.3)
+        awaitAnimEnd()
+    end
+end
+local getClosest = function(name) -- dumpster, seat 
+    if name:lower() == "dumpster" then
+        local dumpsters = {
+            game:GetService("Workspace").Exterior.Dumpster;
+            game:GetService("Workspace").Exterior["Dumpster_Garage"];
+        }
+        local best = {nil,-1}
+        for i,v in pairs(dumpsters) do
+            local distance = (plr.Character.HumanoidRootPart.Position - v.Position).Magnitude
+            if distance < best[2] or best[2] == -1 then
+                best = {v,distance}
+            end
+        end
+        return best[1]
+        
+    elseif name:lower() == "seat" then
+        local seats = {
+            game:GetService("Workspace").Garage.Sofa;
+            game:GetService("Workspace").Interior["Normal Toilet"];
+            game:GetService("Workspace").Ceilings.Sofa;
+            -- game:GetService("Workspace").Debris.Bench; -- lower Energy Regen
+        }
+        local available = {}
+        local best = {nil,-1}
+        for i,seat in pairs(seats) do
+            for i,v in pairs(seat:GetChildren()) do
+                if v.ClassName == "Seat" and v.Occupant == nil then
+                    table.insert(available,v)
+                end
+            end
+        end
+        for i,v in pairs(available) do
+            local distance = (plr.Character.HumanoidRootPart.Position - v.Position).Magnitude
+            if distance < best[2] or best[2] == -1 then
+                best = {v,distance}
+            end
+        end
+        return best[1]
+    end
+end
+
+local Interact = {}
+
+function Interact:RestoreEnergy(percent)
+    percent = percent or math.round(plr:GetAttribute("MaxStamina") * 0.7)
+    local energy = plr.PlayerGui.GameUI.Stamina.Bar.Amount 
+
+    if tonumber(plr:GetAttribute("Stamina")) <= 10 then
+        local old = plr.Character.HumanoidRootPart.Position
+        plr.Character.HumanoidRootPart.CFrame = CFrame.new(getClosest("seat").Position)
+        local con
+        con = energy.Changed:Connect(function()
+            if tonumber(plr:GetAttribute("Stamina")) >= percent then
+                plr.Character.Humanoid:ChangeState(3) -- jump
+                wait()
+                plr.Character.HumanoidRootPart.CFrame = CFrame.new(old)
+                pcall(function() con:Disconnect() end)
+                con = nil
+            end
+        end)
+        repeat wait(0.5) until con == nil
+        return true
+    end
+    return false
+    
+end
+function Interact:EquipTool(name,repromt)
+    local item2 = ""
+    
+    if name:find("leftmirror") then
+        item2 = "Mirror (Left)"
+    elseif name:find("rightmirror") then
+        item2 = "Mirror (Right)"
+    elseif name:find("leftdoor") then
+        item2 = "Door (Left)"
+    elseif name:find("rightdoor") then
+        item2 = "Door (Right)"
+    elseif name:find("brakedisk") then
+        item2 = "Brakedisk"
+    elseif name:find("wheel") then
+        item2 = "Wheel"
+    end
+    
+    local _temp = function(equip,v,namE)
+        namE = namE or "-10iq"
+        local old = plr.Character.HumanoidRootPart.Position
+        local exold = equip.Exclusivity
+        if (plr.Character.HumanoidRootPart.Position - v.Position).Magnitude > 10 then plr.Character.HumanoidRootPart.CFrame = CFrame.new(v.Position) end
+        wait(0.15)
+        b["tryhard"] = true
+        repeat fireproximityprompt(equip,5);wait(0.15) until plr.Character:FindFirstChild(equip.Parent.Parent.Name) or plr.Character:FindFirstChild(namE) or not b["tryhard"]
+        b["tryhard"] = nil
+        plr.Character.HumanoidRootPart.CFrame = CFrame.new(old)
+        if repromt then 
+            wait(0.15)
+            fireproximityprompt(repromt,5)
+        end
+    end
+    local founditems = {false,false}
+    for i,v in pairs(plr.Character:GetChildren()) do
+        if item2:lower():find(v.Name:lower()) then
+            founditems[2] = true
+        elseif name:lower():find(v.Name:lower()) then
+            founditems[1] = true
+        end
+    end
+    if not founditems[1] then
+        local tools = game:GetService("Workspace"):WaitForChild("Garage"):WaitForChild("Tools"):GetChildren()
+        local best = {nil,-1}
+        for i,v in pairs(tools) do
+            if name:lower():find(v.Name:lower()) then
+                local distance = (plr.Character.HumanoidRootPart.Position - v.Position).Magnitude
+                if distance < best[2] or best[2] == -1 then
+                    best = {v,distance}
+                end
+            end
+        end
+        if best[1] ~= nil then
+            local equip = best[1]:FindFirstChild(best[1].Name).EquipTool
+            _temp(equip,best[1])
+            wait(0.5)
+        end
+    end
+    if not founditems[2] then
+        for i,v in pairs(game:GetService("Workspace"):WaitForChild("Storage"):GetChildren()) do
+            if item2 == v.Name then
+                local namE
+                if item2:find("Mirror") then namE = "Mirror" elseif item2:find("Door") then namE = "Door" end
+                local equip = v:FindFirstChildOfClass("Attachment").EquipTool
+                _temp(equip,v,namE)
+                break
+            end
+        end
+    end
+    
+end
+
+function Interact:CleanWindow(WH)
+    if ((not CD.CW) and (not CD.A)) then
+        CD.CW = true; CD.A = true
+        local promt = nil
+        for i,v in pairs(game:GetService("Workspace"):WaitForChild("Windows"):GetChildren()) do
+            local _promt = v.Attachment.Clean
+            if _promt and _promt.Enabled then
+                promt = _promt
+                break
+            end
+        end
+        
+        if promt then 
+            Interact:RestoreEnergy()
+            FakeWalk(promt.Parent.Parent)
+            firePrompt(promt)
+        end
+        CD.CW = false; CD.A = false
+    end
+end
+function Interact:CleanSpot()
+    if ((not CD.CS) and (not CD.A)) then
+        CD.CS = true; CD.A = true
+        local promt = nil
+        for i,v in pairs(game:GetService("Workspace"):WaitForChild("Stains"):GetChildren()) do
+            local _promt = v:FindFirstChild("Clean")
+            if _promt and _promt.Enabled then
+                promt = _promt
+                break
+            end
+        end
+        
+        if promt then
+            Interact:RestoreEnergy()
+            FakeWalk(promt.Parent)
+            firePrompt(promt)
+        end
+        CD.CS = false; CD.A = false
+    end
+end
+function Interact:CleanPanel()
+    if ((not CD.CP) and (not CD.A)) then
+        CD.CP = true; CD.A = true
+        local promt = nil
+        for i,v in pairs(game:GetService("Workspace"):WaitForChild("Solar"):WaitForChild("Panels"):GetChildren()) do
+            local _promt = v.Stand.CleanPosition.Clean
+            if _promt and _promt.Enabled then
+                promt = _promt
+                break
+            end
+        end
+        
+        if promt then 
+            Interact:RestoreEnergy()
+            FakeWalk(promt.Parent.Parent)
+            firePrompt(promt)
+        end
+        CD.CP = false; CD.A = false
+    end
+end
+function Interact:EmptyTrash()
+    if ((not CD.ET) and (not CD.A)) then
+        CD.ET = true; CD.A = true
+        local promt = nil
+        local promt_bin = getClosest("dumpster")
+        for i,v in pairs(game:GetService("Workspace"):WaitForChild("Trash"):GetChildren()) do
+            local _promt = v.Root.EmptyTrashbin
+            if _promt and _promt.Enabled then
+                promt = _promt
+                break
+            end
+        end
+        
+        if promt then 
+            Interact:RestoreEnergy()
+            FakeWalk(promt.Parent)
+            firePrompt(promt)
+            FakeWalk(promt_bin)
+            firePrompt(promt_bin.ThrowTrashbag)
+        end
+        CD.ET = false; CD.A = false
+    end
+end
+function Interact:ScanItem(cassa_num)
+    if ((not CD.SI) and (not CD.A)) then
+        CD.SI = true; CD.A = true
+        local promt = nil
+        local cassa = nil
+        if not cassa_num then
+            for i,caasa in pairs(game:GetService("Workspace"):WaitForChild("Checkouts"):GetChildren()) do
+                cassa = caasa
+                promt = caasa:FindFirstChild("Items")
+                if promt then promt = promt:GetChildren()[1] end
+                if promt then break end
+            end
+        else 
+            cassa = game:GetService("Workspace"):WaitForChild("Checkouts"):GetChildren()
+            for i,v in pairs(cassa) do
+                if v.Name:find(tostring(cassa_num)) then
+                    cassa = v
+                    break
+                end
+            end
+            promt = cassa.Items:GetChildren()[1] 
+        end
+        
+        if promt and promt.Root:WaitForChild("Scan").Enabled then 
+            Interact:RestoreEnergy()
+            FakeWalk(cassa.Root,"false")
+            firePrompt(promt.Root:WaitForChild("Scan"))
+            wait(0.3)
+        end
+        CD.SI = false; CD.A = false
+    end
+end
+function Interact:FuelCar()
+    if ((not CD.FC) and (not CD.A)) then
+        CD.FC = true; CD.A = true
+        local promt = nil
+        local car = nil
+        local pump = nil
+        for i,v in pairs(game:GetService("Workspace"):GetChildren()) do
+            if v.Name:lower():find("car_") and v.Name ~= "Car_Bus" then
+                car = v
+                pump = car.Root.Pump.Value
+                local _promt = v:FindFirstChild("Lid")
+                if _promt then _promt = _promt:FindFirstChild("Refuel") or _promt:FindFirstChild("FinishFuel") end
+                if _promt and _promt.Enabled then
+                    promt = _promt
+                    break
+                end
+            end
+        end
+        
+        if pump then 
+            if pump.Root.ProximityPoint.RepairPump.Enabled then
+                Interact:RestoreEnergy()
+                FakeWalk(pump.Root,Vector3.new(0,3,0))
+                firePrompt(pump.Root.ProximityPoint.RepairPump)
+            end
+            if promt and promt.Name == "Refuel" and car:FindFirstChild("Root") then 
+                Interact:RestoreEnergy()
+                FakeWalk(car.Root,Vector3.new(0,3,0))
+                firePrompt(promt)
+                spawn(function() 
+                    promt = car.Lid:WaitForChild("FinishFuel")
+                    fire("FinishFuel",car,pump) 
+                end)
+            elseif promt and promt.Name == "FinishFuel" then fire("FinishFuel",car,pump) end
+        end
+        CD.FC = false; CD.A = false
+    end
+end
+function Interact:WashCar()
+    if ((not CD.WC) and (not CD.A)) then
+        CD.WC = true; CD.A = true
+        local station = nil
+        local promts = nil
+        local car = nil
+        for i,v in pairs(game:GetService("Workspace"):GetChildren()) do
+            if v.Name:lower():find("car_") and v.Name ~= "Car_Bus" then
+                car = v
+                station = car.Root.Wash.Value
+                if station then
+                    promts = {v:FindFirstChild("Dirt_Left"),v:FindFirstChild("Dirt_Right"),v:FindFirstChild("Dirt_Back")}
+                    break
+                end
+            end
+        end
+        
+        if promts and car:FindFirstChild("Root") then
+            Interact:RestoreEnergy()
+            FakeWalk(car.Root,Vector3.new(0,3,0))
+            for i,v in pairs(promts) do
+                fire("Wash",car,station,v)
+            end
+        end
+        CD.WC = false; CD.A = false
+    end
+
+end
+
+local menu = ngamestalker:Menu(game.PlaceId,true,function()
+    for i,v in pairs(b) do
+        pcall(function() b[i]:Disconnect() end)
+        b[i] = false
+    end
+    for i,v in pairs(CD) do
+        if type(CD[i]) == "boolean" then CD[i] = false end
+    end
+    for i,v in pairs(cons) do
+        for w,v in pairs(cons[i]) do
+            pcall(function() cons[i][w]:Disconnect() end)
+            cons[i][w] = nil
+        end
+    end
+end)
+
+local gui = menu:Tab("Toggles")
+local markers = menu:Tab("Markers")
+local legit = menu:Tab('Prompt Tweaks')
+local upgrader = menu:Tab("Upgrades")
+
+-- toggles
+gui:Button({name="READ ME (CLICK i BUTTON)",desc="To avoid get kicked\nDon't use a long time AutoFarm toggles (under this button) and not more than 2-3 (more = more risk get kicked)"})
+local shop = plr.PlayerGui.GameUI.Shop
+local openUI = TW:Create(shop,TweenInfo.new(0.3,Enum.EasingStyle.Sine),{Position = UDim2.new(0.5,0,0.5,0)})
+local closeUI = TW:Create(shop,TweenInfo.new(0.3,Enum.EasingStyle.Sine),{Position = UDim2.new(0.5,0,1.5,0)})
+gui:Button({name="Toggle shop menu",key="q"},function()
+    shop.Visible = not shop.Visible
+    if shop.Visible then
+        shop.Position = UDim2.new(0.5,0,0.5,0)
+    end
+end)
+gui:Toggle({name="Clean Window (Janitor)"},function(s)
+    b[1] = s
+    if s then
+        spawn(function()
+            while b[1]do
+                Interact:CleanWindow()
+                wait(0.3)
+            end
+        end)
+    end
+end)
+gui:Toggle({name="Clean Spots (Janitor)"},function(s)
+    b[2] = s
+    if s then
+        spawn(function()
+            while b[2] do
+                Interact:CleanSpot()
+                wait(0.3)
+            end
+        end)
+    end
+end)
+gui:Toggle({name="Clean Panels (Janitor)"},function(s)
+    b[3] = s
+    if s then
+        spawn(function()
+            while b[3] do
+                Interact:CleanPanel()
+                wait(0.3)
+            end
+        end)
+    end
+end)
+gui:Toggle({name="Empty Trash Binds (Janitor)"},function(s)
+    b[4] = s
+    if s then
+        spawn(function()
+            while b[4] do
+                Interact:EmptyTrash()
+                wait(0.3)
+            end
+        end)
+    end
+end)
+local cassa_int = 0
+gui:Slider({name="Cassa number",desc="0 = all cassas",val={0,cassa_int,2}},function(s) cassa_int = s end)
+gui:Toggle({name="Scan Items (Clerk)"},function(s)
+    b[5] = s
+    if s then
+        spawn(function()
+            while b[5] do
+                if cassa_int == 0 then
+                    Interact:ScanItem()
+                else Interact:ScanItem(cassa_int) end
+                wait(0.3)
+            end
+        end)
+    end
+end)
+gui:Toggle({name="Fuel Cars (Refueler)"},function(s)
+    b[6] = s
+    if s then
+        spawn(function()
+            while b[6] do
+                Interact:FuelCar()
+                wait(0.3)
+            end
+        end)
+    end
+end)
+gui:Toggle({name="Wash Cars (Janitor)"},function(s)
+    b[7] = s
+    if s then
+        spawn(function()
+            while b[7] do
+                Interact:WashCar()
+                wait(0.3)
+            end
+        end)
+    end
+end)
+
+-- markers
+cons["OnWinDirt"] = {}
+markers:Toggle({name="Mark dirty windows",state=true,exec=true},function(s)
+    if s then
+        for i,v in pairs(game:GetService("Workspace").Windows:GetChildren()) do
+            table.insert(cons["OnWinDirt"],v.Attachment.Clean:GetPropertyChangedSignal("Enabled"):Connect(function()
+                if v.Attachment.Clean.Enabled then
+                    makeESP(v,"Dirty window",0)
+                else makeESP(v,"") end
+            end))
+            if v.Attachment.Clean.Enabled then
+                makeESP(v,"Dirty window",0)
+            else makeESP(v,"") end
+        end
+    else
+        for i,v in pairs(cons["OnWinDirt"]) do
+            pcall(function() cons["OnWinDirt"][i]:Disconnect() end)
+            cons["OnWinDirt"][i] = nil
+        end
+        for i,v in pairs(game:GetService("Workspace").Windows:GetChildren()) do
+            makeESP(v,"",0)
+        end
+    end
+end)
+cons["OnSolarPanel"] = {}
+markers:Toggle({name="Mark dirty solar panels",state=true,exec=true},function(s)
+    if s then
+        for i,v in pairs(game:GetService("Workspace").Solar.Panels:GetChildren()) do
+            table.insert(cons["OnSolarPanel"],v.Stand.CleanPosition.Clean:GetPropertyChangedSignal("Enabled"):Connect(function()
+                if v.Stand.CleanPosition.Clean.Enabled then
+                    makeESP(v.Stand,"Ditry panel")
+                else makeESP(v.Stand,"") end
+            end))
+            if v.Stand.CleanPosition.Clean.Enabled then
+                makeESP(v.Stand,"Ditry panel")
+            else makeESP(v.Stand,"") end
+        end
+    else
+        for i,v in pairs(cons["OnSolarPanel"]) do
+            pcall(function() cons["OnSolarPanel"][i]:Disconnect() end)
+            cons["OnSolarPanel"][i] = nil
+        end
+        for i,v in pairs(game:GetService("Workspace").Solar.Panels:GetChildren()) do
+            makeESP(v.Stand,"")
+        end
+    end
+end)
+cons["OnSpotDirt"] = {}
+markers:Toggle({name="Mark dirty spots",state=true,exec=true},function(s)
+    if s then
+        for i,v in pairs(game:GetService("Workspace").Stains:GetChildren()) do
+            table.insert(cons["OnSpotDirt"],game:GetService("Workspace").Stains.ChildAdded:Connect(function(v)
+                makeESP(v,"Ditry spot")
+                local con
+                con = v:WaitForChild("Clean").Destroying:Connect(function()
+                    makeESP(v,"")
+                    con:Disconnect()
+                    con = nil
+                end)
+            end))
+            if v:FindFirstChild("Clean") and v.Clean.Enabled then
+                makeESP(v,"Ditry spot")
+            else makeESP(v,"") end
+        end
+    else
+        for i,v in pairs(cons["OnSpotDirt"]) do
+            pcall(function() cons["OnSpotDirt"][i]:Disconnect() end)
+            cons["OnSpotDirt"][i] = nil
+        end
+        for i,v in pairs(game:GetService("Workspace").Stains:GetChildren()) do
+            makeESP(v,"")
+        end
+    end
+end)
+cons["OnTrashBinFull"] = {}
+markers:Toggle({name="Mark full trash bins",state=true,exec=true},function(s)
+    if s then
+        for i,v in pairs(game:GetService("Workspace").Trash:GetChildren()) do
+            table.insert(cons["OnWinDirt"],v.Root.EmptyTrashbin:GetPropertyChangedSignal("Enabled"):Connect(function()
+                if v.Root.EmptyTrashbin.Enabled then
+                    makeESP(v.Root,"Full!")
+                else makeESP(v.Root,"") end
+            end))
+            if v.Root.EmptyTrashbin.Enabled then
+                makeESP(v.Root,"Full!")
+            else makeESP(v.Root,"") end
+        end
+    else
+        for i,v in pairs(cons["OnTrashBinFull"]) do
+            pcall(function() cons["OnTrashBinFull"][i]:Disconnect() end)
+            cons["OnTrashBinFull"][i] = nil
+        end
+        for i,v in pairs(game:GetService("Workspace").Trash:GetChildren()) do
+            makeESP(v.Root,"")
+        end
+    end
+end)
+cons["OnLidRefuel"] = {}
+markers:Toggle({name="Mark cars needed refuel",state=true,exec=true},function(s)
+    if s then
+        for i,v in pairs(game:GetService("Workspace"):GetChildren()) do
+            if v.Name:find("Car_") and v.Name ~= "Car_Bus" and v.Root.Pump.Value and v:FindFirstChild("Lid") and (v.Lid:FindFirstChild("Refuel") or v.Lid:FindFirstChild("FinishFuel")) then
+                makeESP(v.Root,v.Lid:FindFirstChildOfClass("ProximityPrompt").Name)
+                local con
+                con = v.Lid:FindFirstChildOfClass("ProximityPrompt").Destroying:Connect(function()
+                    makeESP(v.Root,"")
+                    con:Disconnect()
+                    con = nil
+                end)
+            end
+        end
+        table.insert(cons["OnLidRefuel"],game:GetService("Workspace").ChildAdded:Connect(function(v)
+            if v.ClassName == "Model" and v.Name ~= "Car_Bus" and v.Name:find("Car_") and v:WaitForChild("Root"):WaitForChild("Pump").Value then
+                local lid = v:WaitForChild("Lid")
+                local p = lid:WaitForChild("Refuel")
+                makeESP(v.Root,p.Name)
+                local con
+                con = p.Destroying:Connect(function()
+                    pcall(function() makeESP(v.Root,"") end)
+                    con:Disconnect()
+                    con = nil
+                end)
+                if p.Name == "Refuel" then
+                    p = lid:WaitForChild("FinishFuel")
+                    makeESP(v.Root,p.Name)
+                    con = p.Destroying:Connect(function()
+                        makeESP(v.Root,"")
+                        con:Disconnect()
+                        con = nil
+                    end)
+                end
+            end
+        end))
+    else
+        for i,v in pairs(cons["OnLidRefuel"]) do
+            pcall(function() cons["OnLidRefuel"][i]:Disconnect() end)
+            cons["OnLidRefuel"][i] = nil
+        end
+        for i,v in pairs(game:GetService("Workspace"):GetChildren()) do
+            if v.Name:find("Car_") then
+                makeESP(v.Root,"")
+            end
+        end
+    end
+end)
+
+-- prompt tweaks
+local legit_IPA
+legit_IPA = legit:Toggle({name="Instant Promt activation",state=true,exec=true},function(s)
+    b[10] = s
+end)
+legit:Toggle({name="Auto fihish fueling",desc="After fueling it will automaticly end it",state=true,exec=true},function(s)
+    b[8] = s
+end)
+legit:Toggle({name="Auto get needed tool (Mechanic)",state=true,exec=true},function(s)
+    b[9] = s
+end)
+legit:Toggle({name="Auto throw trashbags",state=true,exec=true},function(s)
+    b[11] = s
+end)
+legit:Toggle({name="Auto Restore Energy",state=true,exec=true},function(s)
+    b[12] = s
+end)
+
+b["con"] = game:GetService("ProximityPromptService").PromptButtonHoldBegan:Connect(function(promt)
+    if promt.KeyboardKeyCode ~= Enum.KeyCode.E then return end
+    if b[10] then
+        local oldDuration = promt.HoldDuration
+        promt.HoldDuration = 0
+        local con
+        con = promt.PromptButtonHoldEnded:Connect(function()
+            promt.HoldDuration = oldDuration
+            con:Disconnect()
+        end)
+        
+    end
+    if b[12] then
+        local old = plr.Character.HumanoidRootPart.Position
+        if Interact:RestoreEnergy() then
+            plr.Character.HumanoidRootPart.CFrame = CFrame.new(old)
+        end
+    end
+    if b[8] and promt.Name == "Refuel" and promt.Parent.Name == "Lid" then
+        local _car = promt.Parent.Parent
+        local _pump = _car.Root.Pump.Value
+        local _promt = promt.Parent:WaitForChild("FinishFuel")
+        fire("FinishFuel",_car,_pump)
+    elseif b[9] and promt.ObjectText:lower():find("requires") then
+        local text = promt.ObjectText:lower():gsub("%requires","")
+        text = text:gsub("%(","")
+        text = text:gsub("%)","")
+        local items = ""
+        if text:find(" and ") then
+            text = text:gsub(" and ","")
+            for i in string.gmatch(text, "[^%s]+") do
+                items = items..i
+            end
+        else items = text:gsub("% ","") end
+        Interact:EquipTool(items,promt)
+    elseif b[11] and (promt.ActionText == "Grab Scrap" or promt.ObjectText == "Trash Bin") then
+        local old = plr.Character.HumanoidRootPart.Position
+        local bag = plr.Character:WaitForChild("Trashbag")
+        local ds = getClosest("dumpster")
+        plr.Character.HumanoidRootPart.CFrame = CFrame.new(ds.Position)
+        fireproximityprompt(ds.ThrowTrashbag)
+        wait(0.2)
+        plr.Character.HumanoidRootPart.CFrame = CFrame.new(old)
+    end
+end)
+
+local stats = game:GetService("ReplicatedStorage").RemoteFunction:InvokeServer("GetPlayerStats")
+for i,v in pairs(stats["Upgrades"]) do
+    local btn
+    btn = upgrader:Button({name="Upgrade "..i.." ("..tostring(stats["Upgrades"][i][1]).." lvl)"},function()
+        RS.Remote:FireServer("BuyUpgrade",i,stats["Upgrades"][i][1]+1)
+        stats = game:GetService("ReplicatedStorage").RemoteFunction:InvokeServer("GetPlayerStats")
+        btn:Edit({name="Upgrade "..i.." ("..tostring(stats["Upgrades"][i][1]).." lvl)"})
+    end)
+end
+
+-- Info viewer
+--[[pcall(function()
+    game:GetService("Workspace")["NPC_NONOSQUARE"]:Destroy()
+    game:GetService("Workspace")["NPC_YESSQUARE"]:Destroy()
+end)]]
+
+local ScreenGui = plr:WaitForChild("PlayerGui"):FindFirstChild("PLAYERINFO") or Instance.new("ScreenGui")
+local isExist = ScreenGui.Name == "PLAYERINFO"
+local Frame = ScreenGui:FindFirstChildOfClass("Frame") or Instance.new("Frame")
+local UICorner = Frame:FindFirstChildOfClass("UICorner") or Instance.new("UICorner")
+local TextLabel = Frame:FindFirstChildOfClass("TextLabel") or Instance.new("TextLabel")
+
+local closeGui = TW:Create(Frame,TweenInfo.new(0.3,Enum.EasingStyle.Sine),{Position = UDim2.new(0, -205, 0.5, 0)})
+local openGui = TW:Create(Frame,TweenInfo.new(0.3,Enum.EasingStyle.Sine),{Position = UDim2.new(0, -5, 0.5, 0)})
+
+ScreenGui.Name = "PLAYERINFO"
+ScreenGui.Parent = plr:WaitForChild("PlayerGui")
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.ResetOnSpawn = false
+
+Frame.Parent = ScreenGui
+Frame.AnchorPoint = Vector2.new(0, 0.5)
+Frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Frame.BackgroundTransparency = 0.700
+if isExist then closeGui:Play()
+else Frame.Position = UDim2.new(0, -205, 0.5, 0) end
+Frame.Size = UDim2.new(0, 200, 0, 78)
+
+UICorner.CornerRadius = UDim.new(0, 4)
+UICorner.Parent = Frame
+
+TextLabel.Parent = Frame
+TextLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel.BackgroundTransparency = 1.000
+TextLabel.Position = UDim2.new(0.5, 3, 0.5, 0)
+TextLabel.Size = UDim2.new(1, -12, 1, -6)
+TextLabel.Font = Enum.Font.GothamBold
+TextLabel.Text = "?"
+TextLabel.TextColor3 = Color3.fromRGB(155, 155, 155)
+TextLabel.TextSize = 14.000
+TextLabel.RichText = true
+TextLabel.TextStrokeTransparency = 0.000
+TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+TextLabel.TextYAlignment = Enum.TextYAlignment.Top
+
+local isopen = false
+b["RS"] = game:GetService("RunService").RenderStepped:Connect(function(k)
+    local m = plr:GetMouse()
+    
+    if m.Target.Parent.ClassName == "Model" and table.find({"Head","Torso","HumanoidRootPart","Left Arm","Right Arm","Left Leg","Right Leg"},m.Target.Name) and game:GetService("Players"):GetPlayerFromCharacter(m.Target.Parent) then
+        isopen = true
+        local loser = game:GetService("Players"):GetPlayerFromCharacter(m.Target.Parent)
+        local function atr(name,a)
+            local val = loser:GetAttribute(name)
+            if not a then val = math.round(val) end
+            return tostring(val)
+        end
+        TextLabel.Text = "<font color='rgb(100,100,255)'>"..loser.DisplayName.."'s</font> <font color='rgb(255,255,255)'>info:</font>\nMoney: <font color='rgb(255,255,255)'>"..atr("Money").."</font>\nDaily Wage: <font color='rgb(255,255,255)'>"..atr("WageLevel").."</font>\nStamina: <font color='rgb(255,255,255)'>"..atr("Stamina").."</font>/<font color='rgb(255,255,255)'>"..atr("MaxStamina").."</font>\nSpeed: <font color='rgb(255,255,255)'>"..atr("WalkSpeed").."</font>-<font color='rgb(255,255,255)'>"..atr("RunSpeed").."</font>"
+        openGui:Play()
+    elseif isopen then 
+        isopen = false
+        wait(1.5)
+        if not isopen then closeGui:Play() end 
+    end
+end)

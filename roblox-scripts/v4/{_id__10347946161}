@@ -1,0 +1,57 @@
+-- Rat Washing Tycoon
+local af = true
+local au = true
+local ac = true
+local con
+local menu = ngamestalker:Menu(game.PlaceId,true,function()
+    af = false
+    au = false
+    ac = false
+    con:Disconnect()
+end)
+local tab = menu:Tab()
+
+local Tycoon = game:GetService("ReplicatedStorage").Knit.Services.TycoonService.RF.getTycoon:InvokeServer()
+
+con = Tycoon.Rats.ChildAdded:Connect(function(v)
+    if not af then return end
+    game:GetService("ReplicatedStorage").Knit.Services.TycoonService.RE.CollectRat:FireServer(tonumber(v.Name))
+    game:GetService("ReplicatedStorage").Knit.Services.TycoonService.RE.SellRats:FireServer()
+end)
+
+tab:Toggle({name="AutoFarm",state=af,exec=true},function(s)
+    af = s
+    if s then
+        for i,v in pairs(Tycoon.Rats:GetChildren()) do
+            game:GetService("ReplicatedStorage").Knit.Services.TycoonService.RE.CollectRat:FireServer(tonumber(v.Name))
+        end
+    end
+end)
+tab:Toggle({name="Auto upgrade",exec=true,state=true},function(s)
+    au = s
+    if s then
+        spawn(function()
+            while au and wait(1) do
+                for i,v in pairs(Tycoon.Buttons:GetChildren()) do
+                    if not v:GetAttribute("Gamepass") and v:GetAttribute("Enabled") and v:GetAttribute("Price") <= game.Players.LocalPlayer:GetAttribute("Cash") then
+                        game:GetService("ReplicatedStorage").Knit.Services.TycoonService.RE.PurchaseButton:FireServer(v.Name)
+                
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+local obbyCd = require(game:GetService("ReplicatedStorage").Assets.Stats.Obby).Cooldown + 1
+tab:Toggle({name="Auto Complete obby",exec=true,state=true},function(s)
+    ac = s
+    if s then
+        spawn(function()
+            while ac do
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(game:GetService("Workspace").Obby.Button.Hitbox.Position)
+                wait(obbyCd)
+            end
+        end)
+    end
+end)

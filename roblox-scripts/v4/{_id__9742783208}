@@ -1,0 +1,60 @@
+-- Raise a Yippee
+local plr = game:GetService("Players").LocalPlayer
+
+local function click(part)
+    fireclickdetector(part,5)
+end
+local function touch(part)
+    if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+        firetouchinterest(plr.Character:FindFirstChild("HumanoidRootPart"), part, 1)
+        wait()
+        firetouchinterest(plr.Character:FindFirstChild("HumanoidRootPart"), part, 0)
+    end
+end
+
+local funcs = {}
+local gui = ngamestalker:Menu(game.PlaceId,true,function()
+    for i,v in pairs(funcs) do
+        pcall(function() funcs[i]:Disconnect() end)
+        funcs[i] = false
+    end
+end)
+gui = gui:Tab()
+
+gui:Toggle({name="Clicker"},function(s)
+    funcs["Clicker"] = s
+    
+    if s then
+        spawn(function()
+            funcs["Collector"] = workspace.Debris.ChildAdded:Connect(function(v)
+                touch(v)
+                
+            end)
+            while funcs["Clicker"] and wait() do
+                local part = workspace.Creature:FindFirstChildOfClass("Model").ClickDetector
+                click(part)
+            end
+        end)
+    else
+        pcall(function() funcs["Collector"]:Disconnect() end)
+        funcs["Collector"] = false
+    end
+end)
+gui:Button({name="Buy food for Yippipee",key="q"},function()
+    game:GetService("ReplicatedStorage").Events.ShopRemote:FireServer("Chip Flakes",false)
+end)
+gui:Toggle({name="Collect flowers"},function(s)
+    funcs["Flower"] = s
+    
+    if s then
+        spawn(function()
+            while funcs["Flower"] and wait(1) do
+                for i,v in pairs(game:GetService("Workspace").Map.Computer:GetChildren()) do
+                    if v.ClassName == "Tool" and v.Name == "Flower" then
+                        touch(v:FindFirstChildOfClass("Part"))
+                    end
+                end
+            end
+        end)
+    end
+end)

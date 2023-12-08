@@ -1,0 +1,63 @@
+
+local LP = game.Players.LocalPlayer
+
+local Gui = LP.PlayerGui:FindFirstChild("HEKSK") or Instance.new("ScreenGui", LP.PlayerGui)
+Gui.Name = "HEKSK"
+
+local function GenText(NAME, TEXT)
+    TEXT = TEXT or ""
+    local text = Gui:FindFirstChild(NAME) or Instance.new("TextLabel", Gui)
+    text.Name = NAME
+    text.BackgroundTransparency = 1
+    text.BorderSizePixel = 0
+    text.TextSize = 16
+    text.Font = Enum.Font.GothamBold
+    text.Size = UDim2.new(0,100,0,18)
+    text.TextColor3 = Color3.fromRGB(255,255,255)
+    text.Position = UDim2.new(0,5,0.5,0)
+    text.AnchorPoint = Vector2.new(0,0.5)
+    text.TextXAlignment = Enum.TextXAlignment.Left
+    text.TextYAlignment = Enum.TextYAlignment.Center
+    text.RichText = true
+    text.Text = TEXT
+    return text
+end
+local Highlight = loadstring(game:HttpGet("https://raw.githubusercontent.com/GameSTALkER/roblox-scripts/main/scripts/Highlight.lua"))()
+
+-- 1st code
+local code1 = GenText("code1", "Code vault: ")
+code1.Position = UDim2.new(0,5,0.5,-16)
+for i,v in pairs({'CodeOne';'CodeTwo';'CodeThree';'CodeFour'}) do
+    code1.Text = code1.Text .. game:GetService("Workspace").Space.Events.CombinationEvent[v].CodeInput.SurfaceGui.TextLabel.Text
+end
+
+-- 2nd code
+local code2 = GenText("code2", "Color code vault: ")
+code2.Position = UDim2.new(0,5,0.5,0)
+for i,v in pairs({'Screen1';'Screen2';'Screen3';'Screen4'}) do
+    local c = game:GetService("Workspace").Space.Events.ColorEvent[v].Color
+    code2.Text = code2.Text .. '<font color="#'..c:ToHex()..'">0</font>'
+end
+
+-- 3rd code
+local code3 = GenText("code3", "Symbol code vault: ")
+code3.Position = UDim2.new(0,5,0.5,16)
+for i,v in pairs({'FirstNumber';'SecondNumber';'ThirdNumber';'FourthNumber'}) do 
+    code3.Text = code3.Text .. game:GetService("Workspace").Space.Events.FinalCodeEvent[v].SurfaceGui.Symbol.Text
+end
+
+local Items
+for i,v in pairs(game.Workspace:GetChildren()) do
+    if v.ClassName == "Folder" then
+        for i,v in pairs(v:GetChildren()) do
+            if v.Name == "Battery" then
+                Items = v.Parent
+            
+            end
+        end
+    end
+end
+
+for i,v in pairs(Items:GetChildren()) do
+    Highlight:Mark(v, v.Name)
+end

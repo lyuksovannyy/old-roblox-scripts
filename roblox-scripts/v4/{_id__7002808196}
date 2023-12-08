@@ -1,0 +1,27 @@
+
+local kanavafarm = false
+local delay = 0.5
+local menu = ngamestalker:Menu(game.PlaceId, true, function()
+    pcall(function() kanavafarm:Disconnect() end)
+end)
+
+local tab = menu:Tab()
+
+local lp = game.Players.LocalPlayer
+tab:Toggle({name="Autofarm"},function(s)
+    game:GetService("ReplicatedStorage").Remotes.Respawn:InvokeServer()
+    if s then
+        kanavafarm = lp.CharacterAdded:Connect(function()
+            wait(delay)
+            lp.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(game:GetService("Workspace"):WaitForChild("Kil").Position)
+            
+            local con
+            con = lp.Character.Humanoid.Died:Connect(function()
+                con:Disconnect()
+                game:GetService("ReplicatedStorage").Remotes.Respawn:InvokeServer()
+            end)
+        end)
+    else pcall(function() kanavafarm:Disconnect() end) end
+    game:GetService("ReplicatedStorage").Remotes.Respawn:InvokeServer()
+    
+end)

@@ -1,0 +1,185 @@
+
+-- The Rake REMASTERED
+-- settings
+local esp = {
+    Name = "ESP";
+    Gui = {
+        CornerRadius = 4;
+        
+        BackgroundColor = Color3.fromRGB(255,255,255);
+        BackgroundTransparency = 0.5;
+        
+        TextColor = Color3.fromRGB(0,0,0);
+        TextTransparency = 0.2;
+        Font = Enum.Font.GothamBold;
+    };
+}
+local TweenSettings = {
+    PopUp = TweenInfo.new(0.45,Enum.EasingStyle.Cubic); -- positions and corners
+    ShowUp = TweenInfo.new(0.5,Enum.EasingStyle.Sine); -- colors and transparencies
+}
+
+-- setup
+local wrk = game:GetService("Workspace")
+local Tween = game:GetService("TweenService")
+local Storage = game:GetService("ReplicatedStorage")
+local plr = game:GetService("Players").LocalPlayer
+
+-- functions
+local function XSizeByText(parent,X,XX)
+    X = X or 1
+    XX = XX or 0
+    local A = parent.Size
+    parent.Size = UDim2.new(0, math.huge, X, XX)
+    local B = parent.TextBounds
+    parent.Size = A
+    Tween:Create(parent,TweenInfo.new(0.25,Enum.EasingStyle.Quad),{Size = UDim2.new(0, B.X+6, X, XX)}):Play()
+end
+local makeESP = function(obj,name)
+    pcall(function()
+        if not obj or not name then return end
+    
+        local BillboardGui = obj:FindFirstChild(esp.Name) or Instance.new("BillboardGui",obj)
+        local Exist = (BillboardGui.Name == esp.Name)
+        local Frame = BillboardGui:FindFirstChildOfClass("TextLabel") or Instance.new("TextLabel",BillboardGui)
+        local UICorner = Frame:FindFirstChildOfClass("UICorner") or Instance.new("UICorner",Frame)
+    
+        BillboardGui.Name = esp.Name
+        BillboardGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        BillboardGui.AlwaysOnTop = true
+        BillboardGui.ExtentsOffsetWorldSpace = Vector3.new(0, 2, 0)
+        BillboardGui.LightInfluence = 1
+        BillboardGui.ClipsDescendants = false
+        BillboardGui.Size = UDim2.new(0, 200, 0, 20)
+    
+        Frame.Name = " "
+        Frame.AnchorPoint = Vector2.new(0.5, 1)
+        Frame.Font = esp.Gui.Font
+        Frame.ClipsDescendants = true
+        Frame.TextSize = 14
+        Frame.RichText = true
+        if not Exist then
+            Frame.Size = UDim2.new(0, 0, 1, 0)
+            Frame.Position = UDim2.new(0.5, 0, 1, BillboardGui.AbsoluteSize.Y+5)
+            Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+            Frame.BackgroundTransparency = 1
+            Frame.TextColor3 = Color3.fromRGB(0, 0, 0)
+            Frame.TextTransparency = 1
+            Tween:Create(Frame, TweenSettings.PopUp, {Position = UDim2.new(0.5, 0, 1, 0)}):Play()
+            Tween:Create(Frame, TweenSettings.ShowUp, {
+                BackgroundTransparency = esp.Gui.BackgroundTransparency;
+                BackgroundColor3 = esp.Gui.BackgroundColor;
+                TextTransparency = esp.Gui.TextTransparency;
+                TextColor3 = esp.Gui.TextColor;
+            }):Play()
+        end
+        Frame.Text = tostring(name);XSizeByText(Frame)
+    
+        UICorner.Name = " "
+        Tween:Create(UICorner, TweenSettings.PopUp, {CornerRadius = UDim.new(0, 4)})
+    
+        return BillboardGui,Frame
+    end)
+end
+local distance = function(part)
+    if plr.Character and part then
+        return " ("..tostring(math.round((part.Position - plr.Character.HumanoidRootPart.Position).Magnitude)).."u)"
+    else
+        return ""
+    end
+end
+
+-- session
+local Script = plr.PlayerGui:FindFirstChild("TheScript")
+if Script then Script:Destroy() end
+Script = Instance.new("ScreenGui",plr.PlayerGui)
+
+Script.Name = "TheScript"
+Script.ResetOnSpawn = false
+local cons = {}
+local whilewait = true
+table.insert(cons,Script.Destroying:Connect(function()
+    whilewait = false
+    for i,v in pairs(cons) do
+        cons[i]:Disconnect()
+        cons[i] = nil
+        
+    end
+end))
+
+-- gui
+local Timer = Instance.new("TextLabel",Script)
+Timer.Size = UDim2.new(0,50,0,20)
+Timer.Position = UDim2.new(0,2,0.4,0)
+Timer.TextColor3 = esp.Gui.TextColor
+Timer.TextTransparency = esp.Gui.TextTransparency
+Timer.Font = esp.Gui.Font
+Timer.TextSize = 16
+Timer.BackgroundColor3 = esp.Gui.BackgroundColor
+Timer.BackgroundTransparency = esp.Gui.BackgroundTransparency
+Instance.new("UICorner",Timer).CornerRadius = UDim.new(0,esp.Gui.CornerRadius)
+table.insert(cons,Storage.Timer.Changed:Connect(function()
+    Timer.Text = "Timer: "..tostring(Storage.Timer.Value);XSizeByText(Timer,0,20)
+end))
+
+-- gui
+local menu = ngamestalker:Menu(game.PlaceId,true)
+local tab = menu:Tab()
+
+local bbc = {}
+
+tab:Button({name="SafeHouse Door",key="e"},function()
+    workspace.Map.SafeHouse.Door.RemoteEvent:FireServer("Door")
+end)
+tab:Button({name="SafeHouse Light"},function()
+    workspace.Map.SafeHouse.Door.RemoteEvent:FireServer("Light")
+end)
+tab:Button({name="Observation Tower Light",key="e"},function()
+    workspace.Map.ObservationTower.Lights.RemoteEvent:FireServer("Light")
+end)
+
+
+-- actions
+
+-- KeyBinds
+
+spawn(function() -- General
+    local Map = wrk.Map
+    makeESP(Map.PowerStation.StationFolder.ZapPart,"<font color='rgb(50,50,255)'>Power Station</font>")
+    makeESP(Map.ObservationTower.Area2Part,"<font color='rgb(50,50,255)'>Observation Tower</font>")
+    makeESP(Map.SafeHouse.Base,"<font color='rgb(50,50,255)'>Safe House</font>")
+    makeESP(Map.BaseCamp.SpawnPart,"<font color='rgb(50,50,255)'>Base Camp</font>")
+    makeESP(Map.Shack.XD,"<font color='rgb(50,50,255)'>Shop</font>")
+    
+    while whilewait and wait(0.1) do
+        local flr = wrk:FindFirstChild("FlareGunPickUp")
+        local rake = wrk:FindFirstChild("Rake")
+        
+        if flr then
+            local part = flr:WaitForChild("FlareGun")
+            makeESP(part, "<font color='rgb(255,0,0)'>FlareGun</font>"..distance(part))
+        end
+        if rake then
+            local part = rake:WaitForChild("Head")
+            makeESP(part, "Rake"..distance(part))
+        end
+        
+        for i,v in pairs(wrk.Debris.SupplyCrates:GetChildren()) do
+            local part = v:FindFirstChild("HitBox")
+            if part then
+                makeESP(part,"<font color='rgb(200,0,0)'>Supply Crate</font>")
+            end
+        end
+        
+    end
+end)
+spawn(function() -- Scraps
+    while whilewait and wait(1) do
+        for i,v in pairs(wrk.Filter.ScrapSpawns:GetChildren()) do
+            local Scrap = v:GetChildren()[1]
+            if Scrap and Scrap:FindFirstChild("Scrap") then
+                makeESP(Scrap.Scrap, "<font color='rgb(255,255,50)'>Scrap</font> "..tostring(Scrap.PointsVal.Value).."$")
+            end
+        end
+    end
+end)
