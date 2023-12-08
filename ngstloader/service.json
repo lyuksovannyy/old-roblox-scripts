@@ -1,0 +1,126 @@
+{
+    
+    "script-path": "https://raw.githubusercontent.com/GameSTALkER/ngstloader/main/games/",
+    
+    "blacklist": [6808416928],
+
+    "1632210982": {"author": "nGameSTALkER",
+                   "script": true,
+                   "lobby": "1240123653"
+     },
+    
+    "142823291":  {"author": "xennyy", 
+                   "script": "https://raw.githubusercontent.com/xennyy/Xenny-Ware/main/MM2.lua"
+     },
+
+    "1537690962": {"author": "Pepsi", 
+                   "script": true
+     },
+
+    "2286901071": {"author": "nGameSTALkER", 
+                   "script": true,
+                   "lobby": true
+     },
+    
+    "1962086868": {"author": "nGameSTALkER",
+                   "script": true
+     },
+    
+    "2356303743": {"author": "nGameSTALkER", 
+                   "script": true,
+                   "lobby": "2286901071"
+     },
+
+    "3101667897": {"author": "nGameSTALkER", 
+                   "script": true
+     },
+
+    "4490140733": {"author": false, 
+                   "script": true
+     },
+
+    "4806026225": {"author": "nGameSTALkER", 
+                   "script": true
+     },
+
+    "5256165620": {"author": false, 
+                   "script": true
+     },
+    
+    "537413528": {"author": "nGameSTALkER",
+                  "script": true    
+    
+     },
+
+    "5591597781": {"author": "nGameSTALkER", 
+                   "script": true,
+                   "lobby": "3260590327"
+     },
+
+    "6284583030": {"author": "Pepsi",
+                   "script": true
+     },
+
+    "6447798030": {"author": "wally", 
+                   "script": "https://raw.githubusercontent.com/wally-rblx/funky-friday-autoplay/main/main.lua"
+     },
+    
+    "7094672259": {"author": "nGameSTALkER",
+                   "script": true 
+    },
+
+    "7562422641": {"author": "nGameSTALkER", 
+                   "script": true,
+                   "lobby": "7555007091"
+     },
+
+    "7584496019": {"author": "Ezpi",
+                   "script": true
+     },
+    
+    "9848789324": {"author": "nGameSTALkER",
+                   "script": true
+     },
+
+    "893973440":  {"author": "nGameSTALkER", 
+                   "script": true
+     },
+    
+    "8893378293": {"author": "Andy_Wirus",
+                   "script": true             
+     },
+    
+    "6961824067": {"author": "nGameSTALkER",
+                   "script": true
+     },
+    
+    "3388553819": {"author": "nGameSTALkER",
+                   "script": true
+     },
+    
+    "6679274937": {"author": "nGameSTALkER",
+                   "script": true
+     },
+    
+    "8528736393": {"author": "nGameSTALkER",
+                   "script": true
+     },
+    
+    "9359839118": {"author": "nGameSTALkER",
+                   "script": true
+     },
+    
+    "6755746130": {"author": "nGameSTALkER",
+                   "script": true
+     },
+    
+    "5771467270": {"author": "nGameSTALkER",
+                   "script": true
+     },
+    
+    "7555007091": {"lobby": true, "game": "7562422641"},
+    "1240123653": {"exec?": "1632210982"},
+    "3260590327": {"lobby": true, "game": "5591597781"},
+    "3582763398": {"exec?": "1962086868"},
+    "5253186791": {"exec?": "1962086868"}
+}
